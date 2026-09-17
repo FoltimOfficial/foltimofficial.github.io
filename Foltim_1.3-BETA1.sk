@@ -1,0 +1,149 @@
+function settings():
+    # General Settings:
+    set {CreateBackendServerWithServer} to "true"
+    set {ShowPlugins} to "false"
+    # Admin:
+    set {Admin::Permission} to "foltim.admin" # add a luckperms permission
+    # Messages:
+    set {CommandSounds} to "true"
+    set {Permission::MSG} to "&cYou dont have permission to do that!"
+# /\ /\ /\ /\ /\ /\ SETTINGS UP /\ /\ /\ /\ /\ /\
+
+# WARNING! EACH OF THESE SERVERS HAS TO HAVE "accepts-transfers: true" IN "server.properties"
+
+# BTW! YOU DONT HAVE TO USE YOUR OWN SERVER! YOU CAN JUST MAKE IT GO TO ANOTHER PERSONS SERVER! BUT THE SERVERS HAS TO HAVE "accepts-transfers: true" IN "server.properties"
+# FOR EXAMPLE, "MINEHUT.GG"
+
+# WARNING! ONLY SUPPORTS MINECRAFT 1.20.5+
+
+# CHANGELOG 1.2:
+# - No more :25565!
+# - Admin permissions!
+# - More Settings!
+
+# DISCORD: 
+# YOUTUBE: https://www.youtube.com/@jestiqx
+
+on load:
+    set {PLUGINCOUNT} to 0
+    set {PLUGINLIST} to ""
+    set {ERRORINFO} to ""
+    set {WARNINFO} to ""
+    set {DEBUG} to ""
+    set {FoltimErrorsOccurred} to ""
+    set {FoltimWarnsOccurred} to ""
+    set {FoltimVersion} to "v1.3 BETA"
+    set {COMMAND} to ""
+    settings()
+    send "<#A000FF><b>Foltim has sucessfully loaded!"
+
+# \/ SERVER MENU DOWN THERE \/ -------------------------------------------------------------------
+
+command /server [<text>]:
+    trigger:
+        # PUT SERVERS IN HERE! --- ADD SERVER CODE: set {SERVER::example} to "example.com"
+        set {SERVER::example} to "example.com"
+        # PUT SERVERS UP HERE! --- ADD SERVER CODE: set {SERVER::example} to "example.com"
+
+        set {_ip} to {SERVER::%arg-1%}
+        if {_ip} is not set:
+            send "&cFailed connecting to %arg-1%: Server Doesn't Exist (Is config set up correctly?)" to player
+            if {CommandSounds} is "true":
+                play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+            else:
+                send "( ͡° ͜ʖ ͡°)" to console
+            stop
+        else if {_ip} contains ":":
+            replace all ":" in {_ip} with " "
+        else:
+            add " 25565" to {_ip}
+        execute console command "minecraft:transfer %{_ip}% %player%"
+
+command /proxyplugins:
+    trigger:
+        if {ShowPlugins} is "true":
+            send "Plugins: <#A000FF><b>%{PLUGINCOUNT}%" to console
+            send "    <#A00AFF>%{PLUGINLIST}%" to console
+            send "Plugins: <#A000FF><b>%{PLUGINCOUNT}%" to player
+            send "    <#A00AFF>%{PLUGINLIST}%"
+        if {ShowPlugins} is "false":
+            send "&cThis Feature has been disabled in the config!" to console
+            send "&cThis Feature has been disabled in the config!" to player
+            if {CommandSounds} is "true":
+                play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+            else:
+                send "( ͡° ͜ʖ ͡°)" to console
+
+command /foltimhelp [<text>]:
+    trigger:
+        if arg-1 is "":
+            send "" to player
+
+command /version:
+    #permission: REMOVE HASHTAG AND REPLACE THIS TEXT WITH YOUR PERMISSION! (HAS TO BE LUCKPERMS OR "op")
+    trigger:
+        send "<#A000FF><b>Foltim %{FoltimVersion}% - Paper" to player
+        send "<#A000FF><b>Foltim %{FoltimVersion}% - Paper" to console
+
+command /foltimversion:
+    #permission: REMOVE HASHTAG AND REPLACE THIS TEXT WITH YOUR PERMISSION! (HAS TO BE LUCKPERMS OR "op")
+    trigger:
+        send "<#A000FF><b>Foltim %{FoltimVersion}% - Paper" to player
+        send "<#A000FF><b>Foltim %{FoltimVersion}% - Paper" to console
+            
+command /createserver [<text>] [<text>]: # WARNING! DON'T ENABLE UNLESS YOU KNOW WHAT YOUR DOING!
+    #permission: REMOVE HASHTAG AND REPLACE THIS TEXT WITH YOUR PERMISSION! (HAS TO BE LUCKPERMS OR "op")
+    trigger:
+        if player have permission "%{Admin::Permission}%":
+            if {CreateBackendServerWithServer} is "true":
+                set {SERVER::%arg-1%} to arg-2
+                set {_SERVER} to {SERVER::%arg-1%}
+                if {_SERVER} contains ":":
+                    replace all ":" in {_ip} with " "
+                else:
+                    add " 25565" to {_ip}
+                if {_SERVER} is not set:
+                    send "&cNot enough arguments!" to player
+                    if {CommandSounds} is "true":
+                        play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+                    else:
+                        send "( ͡° ͜ʖ ͡°)" to console
+                else:
+                    send "&aServer successfully created!"
+        else:
+            send "%{Permission::MSG}%" to player
+            if {CommandSounds} is "true":
+                play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+            else:
+                send "( ͡° ͜ʖ ͡°)" to console
+        if {CreateBackendServerWithServer} is "false":
+            send "&cThis Feature has been disabled in the config!"
+            if {CommandSounds} is "true":
+                play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+            else:
+                send "( ͡° ͜ʖ ͡°)" to console
+
+command /deleteserver [<text>]:
+    trigger:
+        if player have permission "%{Admin::Permission}%":
+            if {SERVERCOMMANDCREATIONS} is "true":
+                set {_DELETEDSERVER} to {SERVER::%arg-1%}
+                delete {SERVER::%arg-1%}
+                if {_DELETEDSERVER} is not set:
+                    send "&cCannot delete %arg-1%: Server doesn't exist"
+                else:
+                    send "&aServer successfully deleted!"
+            if {SERVERCOMMANDCREATIONS} is "false":
+                send "&cThis Feature has been disabled in the config!"
+                if {CommandSounds} is "true":
+                    play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+                else:
+                    send "( ͡° ͜ʖ ͡°)" to console
+        else:
+            send "%{Permission::MSG}%" to player
+            if {CommandSounds} is "true":
+                play sound "entity.villager.no" with volume 0.5 and pitch 1.0 to player
+            else:
+                send "( ͡° ͜ʖ ͡°)" to console
+
+# PLUGINS HERE! ----------------------- MORE INFO: You can import plugins right here!
